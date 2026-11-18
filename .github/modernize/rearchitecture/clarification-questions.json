@@ -1,0 +1,537 @@
+{
+  "schema": "clarification-questions/v1",
+  "generated_at": "2026-10-18T12:15:07Z",
+  "user_input": "#attachment:Pasted text #1 refer this and make fullly working hms project. As a solution architect and backend developer, develop proper standard backend and frontend using reusable design and SOLID principles. Backend requirements: notification system with SSE and WebSocket realtime communication; .env and application.properties setup; AOP logger; security; optional class; proper exception handling; multithreading and synchronization used properly; standard REST architecture; profiles prod/dev/test; entity, DTO, repository, service, controller; CORS; JWT; easy debugging logger; transaction management with @Transactional and JPA; caching; scheduling; timeouts, retry, circuit breaker and fallback; @Async/thread pool; avoid deadlocks; security, CORS, CSRF, secret configuration; testing with JUnit/Mockito/Actuator health check; Grafana and Splunk monitoring; Liquibase migrations; JVM memory and GC configuration; generate runnable JAR; real-time WhatsApp messages.",
+  "title": "CarePilot HMS Production-Readiness Upgrade",
+  "assessment_snapshot": {
+    "intro": "The current CarePilot prototype provides a starting point for the requested HMS upgrade:",
+    "bullets": [
+      "Frontend: React 19.3.1 + Vite 8.3.4; current design tokens and responsive styling are in frontend/src/styles.css.",
+      "Backend: Spring Boot 3.5.16, Java 17, Spring MVC/JPA, generic clinic-scoped REST CRUD, and persistent file-based H2; schema is currently managed by Hibernate ddl-auto=update.",
+      "The current UI includes 12 clinic record modules and seven demo roles. Existing prototype sign-in is client-side only, not real security.",
+      "Current verification includes 10 passing Playwright UI flows, two passing Spring integration tests, and a successful Vite production build. The user's attached prototype HTML/CSS and the live CarePilot preview are available as UI references.",
+      "Production database choice, formal API compatibility policy, target SLA, privacy/compliance boundary, and WhatsApp provider/delivery mode have not been established."
+    ]
+  },
+  "proposed_outcome": "Upgrade the existing CarePilot prototype in place into a maintainable, testable HMS while preserving existing user workflows and the current React/Spring Boot stack unless answers direct otherwise. Deliver modular reusable frontend and layered Spring services; standards-based REST, real authentication/authorization, safe configuration, audited observability, managed DB migrations, reliable real-time notifications, and automated verification. Keep external WhatsApp delivery disabled or in a safe test mode until its provider, consent, and operational requirements are agreed.",
+  "scope": [
+    "frontend",
+    "backend",
+    "generic"
+  ],
+  "status": "awaiting_answers",
+  "questions": [
+    {
+      "id": "F1",
+      "kit": "frontend",
+      "field": "target.framework",
+      "title": "Frontend framework and version",
+      "question": "Which frontend framework and major version should the upgraded HMS target?",
+      "importance": "required",
+      "impact": 4,
+      "recommended": "React 19",
+      "default": null,
+      "prefilled": true,
+      "prefilled_value": "React 19",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "React 19",
+          "label": "React 19 (current project: 19.3.1)"
+        },
+        {
+          "value": "React 18",
+          "label": "React 18"
+        },
+        {
+          "value": "Other",
+          "label": "Other framework/version"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F2",
+      "kit": "frontend",
+      "field": "target.component_library",
+      "title": "Reusable UI component system",
+      "question": "Which component library or reusable UI approach should the HMS use?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "Material UI v7",
+      "default": null,
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Material UI v7",
+          "label": "Material UI v7 with a custom CarePilot theme"
+        },
+        {
+          "value": "shadcn/ui",
+          "label": "shadcn/ui + Radix UI"
+        },
+        {
+          "value": "Keep existing custom CSS components",
+          "label": "Keep and modularize the existing CSS design system"
+        },
+        {
+          "value": "Ant Design v6",
+          "label": "Ant Design v6"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F3",
+      "kit": "frontend",
+      "field": "visual.screenshots",
+      "title": "Visual references",
+      "question": "What visual reference should guide the HMS screens and responsive states? You can provide screenshot paths/URLs or confirm the attached prototype and current running app are the source of truth.",
+      "importance": "required",
+      "impact": 4,
+      "recommended": null,
+      "default": null,
+      "prefilled": true,
+      "prefilled_value": "Use the attached Pasted text #1.txt prototype HTML/CSS and the existing live UI at http://127.0.0.1:5173/ as the visual reference; no separate screenshot set was supplied.",
+      "answer": null,
+      "depends_on": null,
+      "type": "text"
+    },
+    {
+      "id": "F4",
+      "kit": "frontend",
+      "field": "visual.design_system",
+      "title": "Design tokens and visual system",
+      "question": "Should the frontend preserve the existing prototype visual system, or use another design-token source?",
+      "importance": "required",
+      "impact": 4,
+      "recommended": "Preserve current CarePilot CSS tokens and attached prototype styling",
+      "default": "match existing pixel-by-pixel using extracted CSS custom properties",
+      "prefilled": true,
+      "prefilled_value": "frontend/src/styles.css CSS custom properties and the attached prototype's existing visual styling.",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Preserve current CarePilot CSS tokens and attached prototype styling",
+          "label": "Preserve the existing navy/teal design and CSS tokens"
+        },
+        {
+          "value": "Replace with Material UI default theme",
+          "label": "Use Material UI defaults"
+        },
+        {
+          "value": "Use another design system",
+          "label": "Provide another token/Figma/Storybook source"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F5",
+      "kit": "frontend",
+      "field": "compliance.accessibility",
+      "title": "Accessibility target",
+      "question": "Which accessibility standard should the upgraded HMS meet?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": "WCAG 2.2 AA",
+      "default": "WCAG 2.1 AA",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "WCAG 2.1 AA",
+          "label": "WCAG 2.1 AA"
+        },
+        {
+          "value": "WCAG 2.2 AA",
+          "label": "WCAG 2.2 AA"
+        },
+        {
+          "value": "Section 508",
+          "label": "Section 508"
+        },
+        {
+          "value": "No formal target",
+          "label": "No formal target"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F6",
+      "kit": "frontend",
+      "field": "compatibility.browsers",
+      "title": "Browser support",
+      "question": "Which browsers and runtime versions must the HMS support?",
+      "importance": "recommended",
+      "impact": 2,
+      "recommended": null,
+      "default": "modern evergreen (Chrome, Firefox, Safari, Edge — latest 2 major versions)",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "type": "text"
+    },
+    {
+      "id": "F7",
+      "kit": "frontend",
+      "field": "responsive.breakpoints",
+      "title": "Responsive behavior",
+      "question": "What responsive and breakpoint strategy should be applied to clinical and operational workflows?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": null,
+      "default": "mobile-first using existing breakpoints detected from codebase",
+      "prefilled": true,
+      "prefilled_value": "Keep the existing responsive behavior and detected breakpoints; prioritize usable desktop/tablet workflows and retain mobile support.",
+      "answer": null,
+      "depends_on": null,
+      "type": "text"
+    },
+    {
+      "id": "F8",
+      "kit": "frontend",
+      "field": "i18n.locales",
+      "title": "Languages and locale formatting",
+      "question": "Which interface locales should be included? Current screens are English and use Indian rupee formatting.",
+      "importance": "optional",
+      "impact": 2,
+      "recommended": "en-IN",
+      "default": "preserve current locales; keep existing i18n library if present",
+      "prefilled": true,
+      "prefilled_value": "en-IN",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "en-IN",
+          "label": "English (India) / INR"
+        },
+        {
+          "value": "hi-IN",
+          "label": "Hindi (India)"
+        },
+        {
+          "value": "Other locale",
+          "label": "Another locale"
+        }
+      ],
+      "allow_other": true,
+      "type": "multi_select"
+    },
+    {
+      "id": "F9",
+      "kit": "frontend",
+      "field": "state_mgmt.preference",
+      "title": "Frontend state and API data",
+      "question": "What state-management approach should be used for authenticated UI state and server/API data?",
+      "importance": "optional",
+      "impact": 3,
+      "recommended": "TanStack Query v5 for server state; minimal React state for UI/auth",
+      "default": "preserve existing pattern if identifiable; otherwise recommend minimal (component state + server-state library)",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "TanStack Query v5 for server state; minimal React state for UI/auth",
+          "label": "TanStack Query for API cache + minimal React state"
+        },
+        {
+          "value": "Redux Toolkit",
+          "label": "Redux Toolkit"
+        },
+        {
+          "value": "Zustand",
+          "label": "Zustand"
+        },
+        {
+          "value": "Preserve current React state pattern",
+          "label": "Keep the current local state/fetch pattern"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "F10",
+      "kit": "frontend",
+      "field": "routing.preference",
+      "title": "Navigation and routing",
+      "question": "Should multi-module HMS navigation use a URL-based router?",
+      "importance": "optional",
+      "impact": 2,
+      "recommended": "React Router v7",
+      "default": "use the de-facto router for the chosen target framework",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "React Router v7",
+          "label": "React Router v7 with protected routes"
+        },
+        {
+          "value": "Preserve current in-memory page switching",
+          "label": "Keep current local page switching"
+        },
+        {
+          "value": "TanStack Router",
+          "label": "TanStack Router"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B1",
+      "kit": "backend",
+      "field": "target.framework",
+      "title": "Backend framework and runtime",
+      "question": "Should the backend stay on the existing Spring Boot and Java versions, or target a different supported version?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "Spring Boot 3.5.16 + Java 17",
+      "default": null,
+      "prefilled": true,
+      "prefilled_value": "Spring Boot 3.5.16 + Java 17 (current project versions).",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Spring Boot 3.5.16 + Java 17",
+          "label": "Keep Spring Boot 3.5.16 + Java 17 for this upgrade"
+        },
+        {
+          "value": "Spring Boot 4.x + Java 21 or newer",
+          "label": "Upgrade to Spring Boot 4.x + Java 21 or newer"
+        },
+        {
+          "value": "Other Spring Boot/Java target",
+          "label": "Specify another Spring Boot and Java version"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B2",
+      "kit": "backend",
+      "field": "api.contract_preservation",
+      "title": "REST API compatibility",
+      "question": "How should the existing clinic-scoped REST API contract be handled while improving the architecture?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "must preserve",
+      "default": "must preserve",
+      "prefilled": true,
+      "prefilled_value": "must preserve existing React client behavior and API routes where feasible; introduce new versioned routes for incompatible API changes.",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "must preserve",
+          "label": "Preserve existing endpoints and payloads; extend compatibly"
+        },
+        {
+          "value": "can break with versioning",
+          "label": "Introduce a versioned API and deprecate old routes"
+        },
+        {
+          "value": "can break",
+          "label": "Redesign without maintaining old client compatibility"
+        },
+        {
+          "value": "partial: preserve existing React client routes and payloads; add standard versioned APIs as needed",
+          "label": "Preserve the existing React client contract; version other changes"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B3",
+      "kit": "backend",
+      "field": "data.migration_strategy",
+      "title": "Production database and migration",
+      "question": "What database and data-migration approach should the HMS use? Liquibase is requested for schema migrations; this choice establishes the production database and transition strategy.",
+      "importance": "required",
+      "impact": 5,
+      "recommended": "PostgreSQL production; H2 for tests; Liquibase baseline/migration from the current H2 demo",
+      "default": "TBD / assess in research phase",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "PostgreSQL production; H2 for tests; Liquibase baseline/migration from the current H2 demo",
+          "label": "PostgreSQL in production, H2 for tests, Liquibase baseline/migration (Recommended)"
+        },
+        {
+          "value": "Keep H2 for all profiles and manage its schema with Liquibase",
+          "label": "Keep H2 across dev/test/prod with Liquibase"
+        },
+        {
+          "value": "Use another production database and migrate the current H2 demo using Liquibase",
+          "label": "Choose another production database and migrate with Liquibase"
+        },
+        {
+          "value": "TBD / assess in research phase",
+          "label": "Defer production database selection to architecture assessment"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B4",
+      "kit": "backend",
+      "field": "auth.framework",
+      "title": "Authentication and identity",
+      "question": "Which authentication and authorization approach should protect the HMS APIs and frontend routes? Never submit passwords, signing keys, API tokens, or other secrets in this form.",
+      "importance": "recommended",
+      "impact": 5,
+      "recommended": "Spring Security with JWT",
+      "default": "preserve existing auth mechanism; detect from codebase",
+      "prefilled": true,
+      "prefilled_value": "Spring Security with JWT tokens; the current prototype has no server-side authentication, so no existing auth mechanism can be preserved.",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "Spring Security with JWT",
+          "label": "Spring Security with JWT access/refresh-token flow"
+        },
+        {
+          "value": "Keycloak / OIDC",
+          "label": "Keycloak or another OIDC identity provider issuing JWTs"
+        },
+        {
+          "value": "Microsoft Entra ID / OIDC",
+          "label": "Microsoft Entra ID / OIDC"
+        },
+        {
+          "value": "Other existing identity provider",
+          "label": "Use another existing identity provider"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "B5",
+      "kit": "backend",
+      "field": "nfr.sla",
+      "title": "Performance and availability targets",
+      "question": "What measurable service targets should be designed and tested (such as p95 API latency, concurrent users, uptime, and recovery time)?",
+      "importance": "recommended",
+      "impact": 4,
+      "recommended": null,
+      "default": "match current production baseline; no regression",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "type": "text"
+    },
+    {
+      "id": "G1",
+      "kit": "generic",
+      "field": "success.definition",
+      "title": "Definition of done",
+      "question": "What measurable conditions define a successful, production-ready HMS delivery?",
+      "importance": "required",
+      "impact": 5,
+      "recommended": null,
+      "default": "feature parity with the current system; all existing user-facing behaviors preserved",
+      "prefilled": true,
+      "prefilled_value": "Preserve and verify existing clinic workflows; implement the confirmed frontend/backend, authentication, profile/configuration, REST, database migration, real-time notification, observability, resilience, packaging, and security requirements; run frontend and backend tests, browser end-to-end tests, and health/readiness checks successfully. External WhatsApp delivery is verified only in the agreed safe environment and must not use real recipients during tests.",
+      "answer": null,
+      "depends_on": null,
+      "type": "text"
+    },
+    {
+      "id": "G2",
+      "kit": "generic",
+      "field": "out_of_scope",
+      "title": "Scope boundaries",
+      "question": "Are there screens, integrations, deployment environments, data, or changes that must remain out of scope?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": null,
+      "default": "no explicit exclusions; agent will infer from project structure",
+      "prefilled": false,
+      "prefilled_value": null,
+      "answer": null,
+      "depends_on": null,
+      "type": "text"
+    },
+    {
+      "id": "G3",
+      "kit": "generic",
+      "field": "existing_tests.posture",
+      "title": "Existing test suite policy",
+      "question": "How should existing unit, integration, and browser tests be treated during the upgrade?",
+      "importance": "recommended",
+      "impact": 3,
+      "recommended": "must pass and expand coverage for new requirements",
+      "default": "must pass",
+      "prefilled": true,
+      "prefilled_value": "Existing passing Maven integration tests, React build, and 10 Playwright end-to-end tests must continue to pass; add JUnit/Mockito and appropriate API/realtime/auth regression tests.",
+      "answer": null,
+      "depends_on": null,
+      "options": [
+        {
+          "value": "must pass and expand coverage for new requirements",
+          "label": "Existing tests must pass; add required coverage (Recommended)"
+        },
+        {
+          "value": "can rewrite with equivalent coverage",
+          "label": "Tests may be rewritten with equivalent coverage"
+        },
+        {
+          "value": "ignore existing tests and write a new test suite",
+          "label": "Replace current tests and create a new suite"
+        },
+        {
+          "value": "partial: preserve passing tests and replace only tests made obsolete by approved architecture changes",
+          "label": "Preserve relevant tests; replace only obsolete coverage"
+        }
+      ],
+      "allow_other": true,
+      "type": "single_select"
+    },
+    {
+      "id": "G5",
+      "kit": "generic",
+      "field": "constraints.additional",
+      "title": "Additional constraints and integrations",
+      "question": "Confirm or add the remaining hard requirements, compliance/security constraints, deployment assumptions, and WhatsApp integration decisions. In particular, identify the intended WhatsApp provider (Meta WhatsApp Cloud API, Twilio, or another provider), whether implementation should stop at a sandbox/stub or enable real outbound delivery, and consent/template/opt-in expectations. Name monitoring destinations or deployment tools if already chosen. Do not enter any secrets or real patient data; identify where secret values will be provisioned, not their values.",
+      "importance": "optional",
+      "impact": 5,
+      "recommended": null,
+      "default": "None beyond the decisions listed in this specification.",
+      "prefilled": true,
+      "prefilled_value": "From the request: SSE notifications and WebSocket realtime communication; Spring Security/JWT, CORS/CSRF controls, environment/property-based secret management (no committed secrets), dev/test/prod profiles, layered REST/entity/DTO/repository/service/controller architecture, SOLID and reusable frontend, AOP logging, centralized optional/error handling, JPA transactions, caching, scheduling, bounded async/thread pools, synchronization only where justified, timeouts/retries/circuit breaker/fallback, JUnit/Mockito/Actuator health, Grafana and Splunk monitoring, Liquibase, JVM memory/GC configuration, runnable executable JAR, and WhatsApp realtime messaging. Please specify compliance obligations (for example applicable India DPDP and/or other healthcare/privacy policy), hosting/deployment target, WhatsApp provider and test-vs-real-send boundary, and any explicit scope exclusions. Secrets must be provisioned securely via local ignored env files or deployment secret stores and must never be placed in source control, frontend bundles, tests, or this answer form.",
+      "answer": null,
+      "depends_on": null,
+      "type": "text"
+    }
+  ]
+}

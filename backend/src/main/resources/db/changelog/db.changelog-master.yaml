@@ -1,0 +1,730 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-care-records
+      author: carepilot
+      changes:
+        - createTable:
+            tableName: care_records
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: clinic_id
+                  type: VARCHAR(40)
+                  constraints: { nullable: false }
+              - column:
+                  name: category
+                  type: VARCHAR(40)
+                  constraints: { nullable: false }
+              - column:
+                  name: external_id
+                  type: VARCHAR(80)
+                  constraints: { nullable: false }
+              - column:
+                  name: payload_json
+                  type: VARCHAR(20000)
+                  constraints: { nullable: false }
+        - addUniqueConstraint:
+            tableName: care_records
+            columnNames: clinic_id, category, external_id
+            constraintName: uq_care_records_scope
+  - changeSet:
+      id: 002-care-record-audit-timestamps
+      author: carepilot
+      changes:
+        - addColumn:
+            tableName: care_records
+            columns:
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+  - changeSet:
+      id: 003-user-accounts
+      author: carepilot
+      changes:
+        - createTable:
+            tableName: user_accounts
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints: { primaryKey: true, nullable: false }
+              - column:
+                  name: username
+                  type: VARCHAR(80)
+                  constraints: { nullable: false, unique: true }
+              - column:
+                  name: password_hash
+                  type: VARCHAR(100)
+                  constraints: { nullable: false }
+              - column:
+                  name: role
+                  type: VARCHAR(30)
+                  constraints: { nullable: false }
+              - column:
+                  name: enabled
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints: { nullable: false }
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+  - changeSet:
+      id: 004-direct-messages
+      author: carepilot
+      changes:
+        - createTable:
+            tableName: direct_messages
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints: { primaryKey: true, nullable: false }
+              - column:
+                  name: clinic_id
+                  type: VARCHAR(40)
+                  constraints: { nullable: false }
+              - column:
+                  name: sender
+                  type: VARCHAR(80)
+                  constraints: { nullable: false }
+              - column:
+                  name: recipient
+                  type: VARCHAR(80)
+                  constraints: { nullable: false }
+              - column:
+                  name: body
+                  type: VARCHAR(2000)
+                  constraints: { nullable: false }
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+        - createIndex:
+            tableName: direct_messages
+            indexName: ix_message_conversation
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: sender }
+              - column: { name: recipient }
+              - column: { name: id }
+  - changeSet:
+      id: 005-user-clinic-memberships
+      author: carepilot
+      changes:
+        - createTable:
+            tableName: user_clinic_memberships
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_clinic_membership_user
+                    references: user_accounts(id)
+                    deleteCascade: true
+              - column:
+                  name: clinic_id
+                  type: VARCHAR(40)
+                  constraints: { nullable: false }
+        - addPrimaryKey:
+            tableName: user_clinic_memberships
+            columnNames: user_id, clinic_id
+            constraintName: pk_user_clinic_memberships
+        - createIndex:
+            tableName: user_clinic_memberships
+            indexName: ix_clinic_membership_clinic
+            columns:
+              - column: { name: clinic_id }
+  - changeSet:
+      id: 006-whatsapp-outbox
+      author: carepilot
+      changes:
+        - createTable:
+            tableName: whatsapp_outbox
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints: { primaryKey: true, nullable: false }
+              - column:
+                  name: clinic_id
+                  type: VARCHAR(40)
+                  constraints: { nullable: false }
+              - column:
+                  name: requested_by
+                  type: VARCHAR(80)
+                  constraints: { nullable: false }
+              - column:
+                  name: phone_number
+                  type: VARCHAR(20)
+                  constraints: { nullable: false }
+              - column:
+                  name: message_body
+                  type: VARCHAR(1000)
+                  constraints: { nullable: false }
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: PENDING
+                  constraints: { nullable: false }
+              - column:
+                  name: attempt_count
+                  type: INT
+                  defaultValueNumeric: 0
+                  constraints: { nullable: false }
+              - column:
+                  name: provider_message_id
+                  type: VARCHAR(120)
+              - column:
+                  name: last_error
+                  type: VARCHAR(500)
+              - column:
+                  name: next_attempt_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+        - createIndex:
+            tableName: whatsapp_outbox
+            indexName: ix_whatsapp_outbox_dispatch
+            columns:
+              - column: { name: status }
+              - column: { name: next_attempt_at }
+  - changeSet:
+      id: 007-patient-accounts-and-invites
+      author: carepilot
+      changes:
+        - addColumn:
+            tableName: user_accounts
+            columns:
+              - column:
+                  name: patient_record_id
+                  type: VARCHAR(80)
+        - createTable:
+            tableName: patient_invites
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints: { primaryKey: true, nullable: false }
+              - column:
+                  name: clinic_id
+                  type: VARCHAR(40)
+                  constraints: { nullable: false }
+              - column:
+                  name: patient_record_id
+                  type: VARCHAR(80)
+                  constraints: { nullable: false }
+              - column:
+                  name: issued_by
+                  type: VARCHAR(80)
+                  constraints: { nullable: false }
+              - column:
+                  name: token_hash
+                  type: VARCHAR(64)
+                  constraints: { nullable: false, unique: true }
+              - column:
+                  name: expires_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints: { nullable: false }
+              - column:
+                  name: used
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints: { nullable: false }
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+  - changeSet:
+      id: 008-query-path-indexes
+      author: carepilot
+      changes:
+        - createIndex:
+            tableName: care_records
+            indexName: ix_care_records_list
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: category }
+              - column: { name: id }
+        - createIndex:
+            tableName: direct_messages
+            indexName: ix_messages_recipient_order
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: recipient }
+              - column: { name: id }
+        - createIndex:
+            tableName: direct_messages
+            indexName: ix_messages_reverse_conversation
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: recipient }
+              - column: { name: sender }
+              - column: { name: id }
+        - dropIndex:
+            tableName: whatsapp_outbox
+            indexName: ix_whatsapp_outbox_dispatch
+        - createIndex:
+            tableName: whatsapp_outbox
+            indexName: ix_whatsapp_outbox_dispatch
+            columns:
+              - column: { name: status }
+              - column: { name: next_attempt_at }
+              - column: { name: id }
+        - createIndex:
+            tableName: whatsapp_outbox
+            indexName: ix_whatsapp_outbox_clinic_created
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: created_at }
+        - createIndex:
+            tableName: whatsapp_outbox
+            indexName: ix_whatsapp_outbox_requester_created
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: requested_by }
+              - column: { name: created_at }
+  - changeSet:
+      id: 009-whatsapp-consent-audit
+      author: carepilot
+      changes:
+        - addColumn:
+            tableName: whatsapp_outbox
+            columns:
+              - column:
+                  name: consent_confirmed_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+  - changeSet:
+      id: 010-user-role-index
+      author: carepilot
+      changes:
+        - createIndex:
+            tableName: user_accounts
+            indexName: ix_user_accounts_role
+            columns:
+              - column: { name: role }
+  - changeSet:
+      id: 011-persisted-user-notifications
+      author: carepilot
+      changes:
+        - createTable:
+            tableName: user_notifications
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints: { primaryKey: true, nullable: false }
+              - column:
+                  name: clinic_id
+                  type: VARCHAR(40)
+                  constraints: { nullable: false }
+              - column:
+                  name: recipient
+                  type: VARCHAR(80)
+                  constraints: { nullable: false }
+              - column:
+                  name: message
+                  type: VARCHAR(500)
+                  constraints: { nullable: false }
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: { nullable: false }
+        - createIndex:
+            tableName: user_notifications
+            indexName: ix_user_notifications_recipient_order
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: recipient }
+              - column: { name: id }
+        - sql:
+            sql: INSERT INTO user_notifications (clinic_id, recipient, message, created_at, updated_at) SELECT clinic_id, recipient, 'New message from ' || sender, created_at, updated_at FROM direct_messages
+  - changeSet:
+      id: 012-clinic-onboarding-leads
+      author: carepilot
+      changes:
+        - createTable:
+            tableName: clinic_leads
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: clinic_name, type: VARCHAR(120), constraints: { nullable: false } }
+              - column: { name: contact_name, type: VARCHAR(120), constraints: { nullable: false } }
+              - column: { name: email, type: VARCHAR(160), constraints: { nullable: false } }
+              - column: { name: phone, type: VARCHAR(32) }
+              - column: { name: city, type: VARCHAR(80) }
+              - column: { name: clinic_type, type: VARCHAR(60) }
+              - column: { name: message, type: VARCHAR(1000) }
+              - column: { name: status, type: VARCHAR(20), defaultValue: NEW, constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+              - column: { name: updated_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+        - createIndex:
+            tableName: clinic_leads
+            indexName: ix_clinic_leads_created
+            columns:
+              - column: { name: created_at }
+  - changeSet:
+      id: 013-user-account-profile
+      author: carepilot
+      changes:
+        - addColumn:
+            tableName: user_accounts
+            columns:
+              - column: { name: display_name, type: VARCHAR(120) }
+              - column: { name: email, type: VARCHAR(160) }
+              - column: { name: phone, type: VARCHAR(32) }
+  - changeSet:
+      id: 014-platform-onboarding-pipeline
+      author: clincanywhere
+      changes:
+        - addColumn:
+            tableName: clinic_leads
+            columns:
+              - column: { name: source, type: VARCHAR(20), defaultValue: WEBSITE, constraints: { nullable: false } }
+              - column: { name: created_by, type: VARCHAR(80) }
+              - column: { name: assigned_to, type: VARCHAR(80) }
+              - column: { name: workspace_id, type: VARCHAR(40) }
+        - createIndex:
+            tableName: clinic_leads
+            indexName: ix_clinic_leads_assigned
+            columns:
+              - column: { name: assigned_to }
+        - createIndex:
+            tableName: clinic_leads
+            indexName: ix_clinic_leads_status
+            columns:
+              - column: { name: status }
+  - changeSet:
+      id: 015-record-audit-events
+      author: clincanywhere
+      changes:
+        - createTable:
+            tableName: record_audit_events
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: clinic_id, type: VARCHAR(40), constraints: { nullable: false } }
+              - column: { name: record_category, type: VARCHAR(40), constraints: { nullable: false } }
+              - column: { name: record_external_id, type: VARCHAR(80), constraints: { nullable: false } }
+              - column: { name: actor, type: VARCHAR(80), constraints: { nullable: false } }
+              - column: { name: action, type: VARCHAR(12), constraints: { nullable: false } }
+              - column: { name: correlation_id, type: VARCHAR(80) }
+              - column: { name: created_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+        - createIndex:
+            tableName: record_audit_events
+            indexName: ix_record_audit_scope_time
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: created_at }
+  - changeSet:
+      id: 016-encrypted-message-storage
+      author: clincanywhere
+      changes:
+        - modifyDataType: { tableName: direct_messages, columnName: body, newDataType: VARCHAR(4000) }
+        - modifyDataType: { tableName: whatsapp_outbox, columnName: phone_number, newDataType: VARCHAR(128) }
+        - modifyDataType: { tableName: whatsapp_outbox, columnName: message_body, newDataType: VARCHAR(2048) }
+  - changeSet:
+      id: 017-encrypted-care-record-storage
+      author: clincanywhere
+      changes:
+        - modifyDataType: { tableName: care_records, columnName: payload_json, newDataType: VARCHAR(30000) }
+  - changeSet:
+      id: 018-whatsapp-delivery-receipts
+      author: clincanywhere
+      changes:
+        - createTable:
+            tableName: whatsapp_delivery_events
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: provider_message_id, type: VARCHAR(120), constraints: { nullable: false } }
+              - column: { name: provider_status, type: VARCHAR(20), constraints: { nullable: false } }
+              - column: { name: occurred_at, type: TIMESTAMP WITH TIME ZONE, constraints: { nullable: false } }
+              - column: { name: received_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+              - column: { name: error_code, type: VARCHAR(40) }
+              - column: { name: processed_at, type: TIMESTAMP WITH TIME ZONE }
+        - addUniqueConstraint:
+            tableName: whatsapp_delivery_events
+            columnNames: provider_message_id, provider_status, occurred_at
+            constraintName: uq_whatsapp_receipt
+  - changeSet:
+      id: 019-whatsapp-consent-and-opt-out
+      author: clincanywhere
+      changes:
+        - addColumn:
+            tableName: whatsapp_outbox
+            columns:
+              - column: { name: phone_fingerprint, type: VARCHAR(64) }
+        - createTable:
+            tableName: whatsapp_consent_events
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: clinic_id, type: VARCHAR(40), constraints: { nullable: false } }
+              - column: { name: phone_fingerprint, type: VARCHAR(64), constraints: { nullable: false } }
+              - column: { name: action, type: VARCHAR(12), constraints: { nullable: false } }
+              - column: { name: evidence_reference, type: VARCHAR(200) }
+              - column: { name: actor, type: VARCHAR(80), constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+        - createIndex:
+            tableName: whatsapp_consent_events
+            indexName: ix_whatsapp_consent_latest
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: phone_fingerprint }
+              - column: { name: id }
+  - changeSet:
+      id: 020-abdm-consent-requests
+      author: clincanywhere
+      changes:
+        - createTable:
+            tableName: abdm_consent_requests
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: clinic_id, type: VARCHAR(40), constraints: { nullable: false } }
+              - column: { name: patient_id, type: VARCHAR(80), constraints: { nullable: false } }
+              - column: { name: purpose, type: VARCHAR(80), constraints: { nullable: false } }
+              - column: { name: status, type: VARCHAR(20), defaultValue: REQUESTED, constraints: { nullable: false } }
+              - column: { name: expires_at, type: TIMESTAMP WITH TIME ZONE, constraints: { nullable: false } }
+              - column: { name: gateway_reference, type: VARCHAR(120) }
+              - column: { name: created_by, type: VARCHAR(80), constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+              - column: { name: updated_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+        - createIndex:
+            tableName: abdm_consent_requests
+            indexName: ix_abdm_consent_clinic_status
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: status }
+              - column: { name: id }
+  - changeSet:
+      id: 021-care-record-optimistic-lock
+      author: clincanywhere
+      changes:
+        - addColumn:
+            tableName: care_records
+            columns:
+              - column: { name: record_version, type: BIGINT, defaultValueNumeric: 0, constraints: { nullable: false } }
+  - changeSet:
+      id: 022-digital-health-and-patient-support
+      author: clincanywhere
+      changes:
+        - createTable:
+            tableName: clinic_health_profiles
+            columns:
+              - column: { name: clinic_id, type: VARCHAR(40), constraints: { primaryKey: true, nullable: false } }
+              - column: { name: hfr_id, type: VARCHAR(80) }
+              - column: { name: hfr_status, type: VARCHAR(20), defaultValue: NOT_REGISTERED, constraints: { nullable: false } }
+              - column: { name: hpr_id, type: VARCHAR(80) }
+              - column: { name: facility_type, type: VARCHAR(50) }
+              - column: { name: services, type: VARCHAR(1000) }
+              - column: { name: address, type: VARCHAR(500) }
+              - column: { name: abdm_milestone, type: VARCHAR(10), defaultValue: M0, constraints: { nullable: false } }
+              - column: { name: updated_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+        - createTable:
+            tableName: professional_health_profiles
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: clinic_id, type: VARCHAR(40), constraints: { nullable: false } }
+              - column: { name: username, type: VARCHAR(80), constraints: { nullable: false } }
+              - column: { name: hpr_id, type: VARCHAR(80) }
+              - column: { name: status, type: VARCHAR(20), defaultValue: NOT_REGISTERED, constraints: { nullable: false } }
+              - column: { name: updated_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+        - addUniqueConstraint:
+            tableName: professional_health_profiles
+            columnNames: clinic_id, username
+            constraintName: uq_professional_profile
+        - createTable:
+            tableName: patient_support_tickets
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: clinic_id, type: VARCHAR(40), constraints: { nullable: false } }
+              - column: { name: patient_id, type: VARCHAR(80) }
+              - column: { name: subject, type: VARCHAR(160), constraints: { nullable: false } }
+              - column: { name: message, type: VARCHAR(2000), constraints: { nullable: false } }
+              - column: { name: status, type: VARCHAR(20), defaultValue: OPEN, constraints: { nullable: false } }
+              - column: { name: assigned_to, type: VARCHAR(80) }
+              - column: { name: created_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+              - column: { name: updated_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+        - createIndex:
+            tableName: patient_support_tickets
+            indexName: ix_support_clinic_status
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: status }
+              - column: { name: created_at }
+        - createTable:
+            tableName: patient_notification_outbox
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: clinic_id, type: VARCHAR(40), constraints: { nullable: false } }
+              - column: { name: requested_by, type: VARCHAR(80), constraints: { nullable: false } }
+              - column: { name: channel, type: VARCHAR(12), constraints: { nullable: false } }
+              - column: { name: destination, type: VARCHAR(400), constraints: { nullable: false } }
+              - column: { name: message_body, type: VARCHAR(5000), constraints: { nullable: false } }
+              - column: { name: status, type: VARCHAR(20), defaultValue: PENDING, constraints: { nullable: false } }
+              - column: { name: attempt_count, type: INT, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: provider_reference, type: VARCHAR(120) }
+              - column: { name: last_error, type: VARCHAR(300) }
+              - column: { name: next_attempt_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+              - column: { name: updated_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+  - changeSet:
+      id: 023-patient-message-consent
+      author: clincanywhere
+      changes:
+        - createTable:
+            tableName: patient_message_consent_events
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: clinic_id, type: VARCHAR(40), constraints: { nullable: false } }
+              - column: { name: channel, type: VARCHAR(12), constraints: { nullable: false } }
+              - column: { name: recipient_fingerprint, type: VARCHAR(64), constraints: { nullable: false } }
+              - column: { name: action, type: VARCHAR(12), constraints: { nullable: false } }
+              - column: { name: evidence_reference, type: VARCHAR(300), constraints: { nullable: false } }
+              - column: { name: recorded_by, type: VARCHAR(80), constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+        - createIndex:
+            tableName: patient_message_consent_events
+            indexName: ix_message_consent_lookup
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: channel }
+              - column: { name: recipient_fingerprint }
+              - column: { name: id }
+  - changeSet:
+      id: 024-care-record-search
+      author: clincanywhere
+      changes:
+        - addColumn:
+            tableName: care_records
+            columns:
+              - column: { name: search_name, type: VARCHAR(64), defaultValue: '', constraints: { nullable: false } }
+              - column: { name: search_phone, type: VARCHAR(64), defaultValue: '', constraints: { nullable: false } }
+              - column: { name: search_id, type: VARCHAR(64), defaultValue: '', constraints: { nullable: false } }
+        - createIndex:
+            tableName: care_records
+            indexName: ix_care_records_search_name
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: category }
+              - column: { name: search_name }
+        - createIndex:
+            tableName: care_records
+            indexName: ix_care_records_search_phone
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: category }
+              - column: { name: search_phone }
+        - createIndex:
+            tableName: care_records
+            indexName: ix_care_records_search_id
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: category }
+              - column: { name: search_id }
+  - changeSet:
+      id: 025-billing-payment-ledger
+      author: clincanywhere
+      changes:
+        - createTable:
+            tableName: billing_payments
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: clinic_id, type: VARCHAR(40), constraints: { nullable: false } }
+              - column:
+                  name: invoice_record_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_billing_payment_invoice
+                    references: care_records(id)
+              - column: { name: invoice_external_id, type: VARCHAR(80), constraints: { nullable: false } }
+              - column: { name: amount_paise, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: currency, type: VARCHAR(3), constraints: { nullable: false } }
+              - column: { name: method, type: VARCHAR(16), constraints: { nullable: false } }
+              - column: { name: status, type: VARCHAR(24), constraints: { nullable: false } }
+              - column: { name: created_by, type: VARCHAR(80), constraints: { nullable: false } }
+              - column: { name: gateway_order_id, type: VARCHAR(80) }
+              - column: { name: gateway_payment_id, type: VARCHAR(80) }
+              - column: { name: gateway_receipt, type: VARCHAR(40) }
+              - column: { name: created_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+              - column: { name: updated_at, type: TIMESTAMP WITH TIME ZONE, defaultValueComputed: CURRENT_TIMESTAMP, constraints: { nullable: false } }
+        - addUniqueConstraint:
+            tableName: billing_payments
+            columnNames: gateway_order_id
+            constraintName: uq_billing_payment_gateway_order
+        - addUniqueConstraint:
+            tableName: billing_payments
+            columnNames: gateway_payment_id
+            constraintName: uq_billing_payment_gateway_payment
+        - createIndex:
+            tableName: billing_payments
+            indexName: ix_billing_payments_invoice
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: invoice_record_id }
+              - column: { name: id }
+        - createIndex:
+            tableName: billing_payments
+            indexName: ix_billing_payments_order
+            columns:
+              - column: { name: gateway_order_id }
+        - createIndex:
+            tableName: billing_payments
+            indexName: ix_billing_payments_pending
+            columns:
+              - column: { name: clinic_id }
+              - column: { name: status }
+              - column: { name: id }

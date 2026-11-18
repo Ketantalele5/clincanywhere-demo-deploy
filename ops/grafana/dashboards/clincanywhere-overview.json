@@ -1,0 +1,23 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "graphTooltip": 1,
+  "panels": [
+    { "type": "stat", "title": "HTTP requests / second", "gridPos": { "h": 5, "w": 6, "x": 0, "y": 0 }, "targets": [{ "expr": "sum(rate(http_server_requests_seconds_count{application=\"clincanywhere-api\"}[5m]))", "refId": "A" }], "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "orientation": "auto", "textMode": "auto", "colorMode": "value" } },
+    { "type": "stat", "title": "HTTP 5xx / second", "gridPos": { "h": 5, "w": 6, "x": 6, "y": 0 }, "targets": [{ "expr": "sum(rate(http_server_requests_seconds_count{application=\"clincanywhere-api\",status=~\"5..\"}[5m]))", "refId": "A" }], "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "orientation": "auto", "textMode": "auto", "colorMode": "value" } },
+    { "type": "timeseries", "title": "HTTP latency p95", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }, "targets": [{ "expr": "histogram_quantile(0.95, sum by (le, uri) (rate(http_server_requests_seconds_bucket{application=\"clincanywhere-api\"}[5m])))", "legendFormat": "{{uri}}", "refId": "A" }], "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }, "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } } },
+    { "type": "timeseries", "title": "JVM heap used", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 }, "targets": [{ "expr": "sum(jvm_memory_used_bytes{application=\"clincanywhere-api\",area=\"heap\"})", "legendFormat": "used", "refId": "A" }, { "expr": "sum(jvm_memory_committed_bytes{application=\"clincanywhere-api\",area=\"heap\"})", "legendFormat": "committed", "refId": "B" }], "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] }, "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } } },
+    { "type": "timeseries", "title": "Garbage collection pause rate", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 }, "targets": [{ "expr": "sum by (action) (rate(jvm_gc_pause_seconds_sum{application=\"clincanywhere-api\"}[5m]))", "legendFormat": "{{action}}", "refId": "A" }], "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }, "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } } },
+    { "type": "timeseries", "title": "Database connections", "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 }, "targets": [{ "expr": "hikaricp_connections_active{application=\"clincanywhere-api\"}", "legendFormat": "active", "refId": "A" }, { "expr": "hikaricp_connections_pending{application=\"clincanywhere-api\"}", "legendFormat": "pending", "refId": "B" }], "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] }, "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } } },
+    { "type": "timeseries", "title": "Process CPU", "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 }, "targets": [{ "expr": "process_cpu_usage{application=\"clincanywhere-api\"}", "legendFormat": "CPU", "refId": "A" }], "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 }, "overrides": [] }, "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } } }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["clincanywhere", "spring-boot"],
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "ClincyAnywhere API Overview",
+  "uid": "clincanywhere-api-overview",
+  "version": 1
+}

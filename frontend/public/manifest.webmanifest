@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "ClincyAnywhere - Clinic Workspace",
+  "short_name": "ClincyAnywhere",
+  "description": "Hospital and clinic operations workspace.",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f3f7fb",
+  "theme_color": "#10243b",
+  "categories": ["medical", "business", "productivity"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

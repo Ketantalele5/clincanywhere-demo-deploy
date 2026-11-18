@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: clincyanywhere-demo-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: demo
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://clincyanywhere-preview.pages.dev
