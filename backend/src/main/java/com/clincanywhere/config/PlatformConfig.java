@@ -81,7 +81,8 @@ public class PlatformConfig implements SchedulingConfigurer {
     @Override public void configureTasks(@NonNull ScheduledTaskRegistrar registrar) { registrar.setTaskScheduler(taskScheduler()); }
 
     @Bean
-    org.springframework.web.filter.CorsFilter corsFilter(@Value("${app.cors.allowed-origins:http://localhost:5173}") String origins) {
+    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors.allowed-origins:http://localhost:5173}") String origins) {
         var config = new org.springframework.web.cors.CorsConfiguration();
         config.setAllowedOrigins(java.util.Arrays.stream(origins.split(",")).map(origin -> origin.trim()).toList());
         config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -89,6 +90,6 @@ public class PlatformConfig implements SchedulingConfigurer {
         config.setAllowCredentials(false);
         var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        return new org.springframework.web.filter.CorsFilter(source);
+        return source;
     }
 }

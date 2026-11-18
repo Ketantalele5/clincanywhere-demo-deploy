@@ -32,8 +32,10 @@ public class SecurityConfig {
                 "Spring Security did not provide an AuthenticationManager");
     }
     @Bean
-    SecurityFilterChain apiSecurity(HttpSecurity http, JwtAuthenticationFilter jwtFilter, ObjectMapper json) throws Exception {
-        return http.csrf(csrf -> csrf.disable())
+    SecurityFilterChain apiSecurity(HttpSecurity http, JwtAuthenticationFilter jwtFilter, ObjectMapper json,
+                                    org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource) throws Exception {
+        return http.cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .csrf(csrf -> csrf.disable())
                 .headers(headers -> headers
                         .contentTypeOptions(org.springframework.security.config.Customizer.withDefaults())
                         .frameOptions(frame -> frame.deny())

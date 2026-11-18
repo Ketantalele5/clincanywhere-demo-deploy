@@ -10,6 +10,6 @@ WORKDIR /app
 COPY --from=build /workspace/target/clincanywhere-api.jar app.jar
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
-ENV JAVA_TOOL_OPTIONS="-XX:InitialRAMPercentage=25 -XX:MaxRAMPercentage=70 -XX:+UseG1GC -Xlog:gc*:stdout:time,level,tags"
+ENV JAVA_TOOL_OPTIONS="-XX:InitialRAMPercentage=10 -XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1"
 EXPOSE 8080
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

@@ -1,6 +1,7 @@
 package com.clincanywhere;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -17,11 +18,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.jspecify.annotations.Nullable;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@TestPropertySource(properties = "app.cors.allowed-origins=https://clincyanywhere-preview.pages.dev")
 class AuthApiTest {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
@@ -32,6 +35,17 @@ class AuthApiTest {
 
     private static <T> T requireNonNull(@Nullable T value) {
         return Objects.requireNonNull(value);
+    }
+
+    @Test void protectedRoutePreflightIsHandledBeforeAuthentication() throws Exception {
+        mvc.perform(options("/api/clinics")
+                        .header("Origin", "https://clincyanywhere-preview.pages.dev")
+                        .header("Access-Control-Request-Method", "GET")
+                        .header("Access-Control-Request-Headers", "authorization"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://clincyanywhere-preview.pages.dev"))
+                .andExpect(header().string("Access-Control-Allow-Methods", org.hamcrest.Matchers.containsString("GET")))
+                .andExpect(header().string("Access-Control-Allow-Headers", org.hamcrest.Matchers.containsString("authorization")));
     }
 
     @Test void loginIssuesJwtAndProtectedRoutesRequireIt() throws Exception {
