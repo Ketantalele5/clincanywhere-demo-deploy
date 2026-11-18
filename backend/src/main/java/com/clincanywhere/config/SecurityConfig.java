@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, failure) -> writeSecurityProblem(
                                 json, request, response, HttpStatus.FORBIDDEN, "Forbidden", "Access denied")))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/login", "/api/auth/register", "/api/public/clinic-onboarding", "/api/webhooks/whatsapp", "/api/payments/webhooks/razorpay", "/api/health", "/actuator/health/**", "/actuator/prometheus", "/ws", "/ws/**", "/error").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
