@@ -3,6 +3,7 @@ services:
     name: clincyanywhere-demo-api
     runtime: docker
     plan: free
+    autoDeployTrigger: commit
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /api/health
