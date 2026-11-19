@@ -19,6 +19,7 @@ class PlatformConfigCorsTest {
         assertEquals("http://127.0.0.1:5173", cors.checkOrigin("http://127.0.0.1:5173"));
         assertNull(cors.checkOrigin("https://untrusted.pages.dev"));
         assertNull(cors.checkOrigin("https://untrusted.eu.org"));
+        assertEquals(java.util.List.of("Authorization"), cors.checkHeaders(java.util.List.of("Authorization")));
         assertEquals(3600L, cors.getMaxAge());
     }
 }

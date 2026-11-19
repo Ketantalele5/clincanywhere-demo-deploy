@@ -89,7 +89,7 @@ public class PlatformConfig implements SchedulingConfigurer {
                 "http://localhost:*",
                 "http://127.0.0.1:*"));
         config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type", "Accept", "Last-Event-ID"));
+        config.setAllowedHeaders(java.util.List.of("*"));
         config.setExposedHeaders(java.util.List.of("X-Correlation-ID"));
         config.setMaxAge(3600L);
         config.setAllowCredentials(false);
