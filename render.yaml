@@ -3,7 +3,14 @@ services:
     name: clincyanywhere-demo-api
     runtime: docker
     plan: free
+    region: singapore
+    repo: https://github.com/Ketantalele5/clincanywhere-demo-deploy
+    branch: main
     autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - backend/**
+        - render.yaml
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /api/health
