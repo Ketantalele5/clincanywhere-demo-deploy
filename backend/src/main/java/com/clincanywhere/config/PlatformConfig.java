@@ -84,9 +84,14 @@ public class PlatformConfig implements SchedulingConfigurer {
     org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource(
             @Value("${app.cors.allowed-origins:http://localhost:5173}") String origins) {
         var config = new org.springframework.web.cors.CorsConfiguration();
-        config.setAllowedOrigins(java.util.Arrays.stream(origins.split(",")).map(origin -> origin.trim()).toList());
-        config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type", "Last-Event-ID"));
+        config.setAllowedOrigins(java.util.Arrays.stream(origins.split(",")).map(origin -> origin.trim()).filter(origin -> !origin.isBlank()).toList());
+        config.setAllowedOriginPatterns(java.util.List.of(
+                "http://localhost:*",
+                "http://127.0.0.1:*"));
+        config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type", "Accept", "Last-Event-ID"));
+        config.setExposedHeaders(java.util.List.of("X-Correlation-ID"));
+        config.setMaxAge(3600L);
         config.setAllowCredentials(false);
         var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
