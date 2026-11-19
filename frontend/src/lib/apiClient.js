@@ -1,6 +1,14 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
+const REALTIME_BASE_URL = import.meta.env.VITE_REALTIME_URL ?? API_BASE_URL;
 let accessToken = null;
 let authenticatedUsername = '';
+
+function validateApiPath(path) {
+  const pathname = String(path).split(/[?#]/, 1)[0];
+  if (pathname.startsWith('/api/') && pathname.split('/').slice(2).some(segment => segment.length === 0)) {
+    throw new Error('Select a clinic workspace before loading clinic data.');
+  }
+}
 
 export function setAccessToken(token) {
   accessToken = token;
@@ -24,6 +32,7 @@ export function clearAccessToken() {
 }
 
 export async function apiRequest(path, options = {}) {
+  validateApiPath(path);
   const headers = new Headers(options.headers ?? {});
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
   if (!headers.has('Content-Type') && options.body != null && !isFormData) {
@@ -71,11 +80,13 @@ export async function apiRequest(path, options = {}) {
 }
 
 export function apiUrl(path) {
+  validateApiPath(path);
   return `${API_BASE_URL}${path}`;
 }
 
 export function webSocketUrl(path) {
-  const url = new URL(apiUrl(path), window.location.href);
+  validateApiPath(path);
+  const url = new URL(`${REALTIME_BASE_URL}${path}`, window.location.href);
   url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
   return url.toString();
 }
