@@ -11,3 +11,5 @@ services:
         value: demo
       - key: CORS_ALLOWED_ORIGINS
         value: https://clincyanywhere-preview.pages.dev
+      - key: DEMO_JWT_SECRET
+        generateValue: true
